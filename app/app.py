@@ -238,9 +238,9 @@ class AppletApplication(BaseApplication):
                           account=self.account, asset=self.asset, platform=self.platform)
         self._tmp_user_dir = tempfile.TemporaryDirectory()
         self._chrome_options = default_chrome_driver_options()
+        self._chrome_options.add_argument('--no-sandbox')
         self._chrome_options.add_argument("--app={}".format(self.asset.address))
         self._chrome_options.add_argument("--user-data-dir={}".format(self._tmp_user_dir.name))
-        self._chrome_options.add_argument('--no-sandbox')
         self._chrome_options.add_argument('--disable-gpu')
         self._chrome_options.add_argument('--gtk-version=4')
         self._chrome_options.add_argument('--disable-dev-shm-usage')
@@ -252,8 +252,8 @@ class AppletApplication(BaseApplication):
                 self._chrome_options.add_argument('--load-extension={}'.format(extension_path))
 
     def run(self):
-        service = Service()
-        from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+        # look path of chromedriver
+        service = Service(executable_path='/usr/bin/chromedriver')
         self.driver = webdriver.Chrome(options=self._chrome_options, service=service)
         self.driver.implicitly_wait(10)
         if self.app.asset.address != "":

@@ -28,4 +28,5 @@ COPY .config/dconf /root/.config/dconf
 COPY openbox /root/.config/openbox
 COPY tint2 /root/.config/tint2
 
+EXPOSE 22 5900
 CMD ["bash", "/usr/local/bin/entrypoint.sh"]

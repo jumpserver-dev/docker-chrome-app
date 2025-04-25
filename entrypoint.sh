@@ -7,24 +7,37 @@ GEOMETRY="${SCREEN_WIDTH}""x""${SCREEN_HEIGHT}"
 DEPTH="${JUMPSERVER_DEPTH:-24}"
 DPI="${JUMPSERVER_DPI:-96}"
 
-# Create VNC config directory
-mkdir -p "${HOME:-/root}/.vnc"
 # Set VNC password
 if [ -z "${JMS_VNC_PASSWORD}" ]; then
     JMS_VNC_PASSWORD=$(head -c100 < /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 8; echo)
     echo "Generated VNC password: ${JMS_VNC_PASSWORD}"
 fi
 
-# Store VNC password
-echo "${JMS_VNC_PASSWORD}" | vncpasswd -f > "${HOME:-/root}/.vnc/passwd"
-chmod 600 "${HOME:-/root}/.vnc/passwd"
+# Create jumpserver user if not exists
+if ! id jumpserver &>/dev/null; then
+    groupadd -r jumpserver
+    useradd -r -g jumpserver -d /home/jumpserver -s /bin/bash -m jumpserver
+fi
 
+echo "jumpserver:${JMS_VNC_PASSWORD}" | chpasswd
+
+# Store VNC password
+mkdir -p /home/jumpserver/.vnc
+echo "${JMS_VNC_PASSWORD}" | vncpasswd -f > /home/jumpserver/.vnc/passwd
+chmod 600 /home/jumpserver/.vnc/passwd
+chown -R jumpserver:jumpserver /home/jumpserver/.vnc
+
+mkdir -p /home/jumpserver/.config
+cp -rp /root/.config/* /home/jumpserver/.config/
+chown -R jumpserver:jumpserver /home/jumpserver/.config
+
+/usr/sbin/sshd
 # Configure xstartup for IME and clipboard support
-cat > "${HOME:-/root}/.vnc/xstartup" <<EOF
+cat > /home/jumpserver/.vnc/xstartup  <<EOF
 #!/bin/sh
 unset SESSION_MANAGER
 unset DBUS_SESSION_BUS_ADDRESS
-
+LANG=C xdg-user-dirs-update --force
 # Start DBus
 dbus-launch --exit-with-session &
 
@@ -57,20 +70,18 @@ sleep 2
 # autocutsel -fork
 # autocutsel -selection PRIMARY -fork
 
-
 exec /opt/py3/bin/python /opt/app/main.py
 EOF
-chmod +x "${HOME:-/root}/.vnc/xstartup"
+chmod +x /home/jumpserver/.vnc/xstartup
+chown jumpserver:jumpserver /home/jumpserver/.vnc/xstartup
 
 # Start TigerVNC server with clipboard support
-exec /usr/bin/vncserver :0 \
+exec su - jumpserver -c "/usr/bin/vncserver :0 \
     -geometry ${GEOMETRY} \
     -depth ${DEPTH} \
     -dpi ${DPI} \
     -localhost no \
-    -passwd "${HOME:-/root}/.vnc/passwd" \
+    -passwd /home/jumpserver/.vnc/passwd \
     -fg \
     -SecurityTypes VncAuth \
-    # +extension XFIXES \
-    -clipboard \
-    "$@"
+    $@"

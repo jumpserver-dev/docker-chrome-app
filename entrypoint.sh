@@ -40,7 +40,7 @@ unset DBUS_SESSION_BUS_ADDRESS
 LANG=C xdg-user-dirs-update --force
 # Start DBus
 dbus-launch --exit-with-session &
-
+export JMS_TOKEN=${JMS_TOKEN}
 export DISPLAY=:0
 # Start iBus for Chinese input
 export XMODIFIERS="@im=ibus"

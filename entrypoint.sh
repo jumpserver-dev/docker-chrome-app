@@ -78,7 +78,7 @@ chown jumpserver:jumpserver /home/jumpserver/.vnc/xstartup
 
 # Start TigerVNC server with clipboard support
 exec su - jumpserver -c "export JMS_TOKEN=${JMS_TOKEN} && \
-     export $HOME=/home/jumpserver && \
+     export HOME=/home/jumpserver && \
     /usr/bin/vncserver :0 \
     -geometry ${GEOMETRY} \
     -depth ${DEPTH} \

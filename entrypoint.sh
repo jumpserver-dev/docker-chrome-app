@@ -28,6 +28,8 @@ chmod 600 /home/jumpserver/.vnc/passwd
 chown -R jumpserver:jumpserver /home/jumpserver/.vnc
 
 mkdir -p /tmp/jumpserver/download
+chown -R jumpserver:jumpserver /tmp/jumpserver/download
+
 mkdir -p /home/jumpserver/.config
 cp -rp /root/.config/* /home/jumpserver/.config/
 chown -R jumpserver:jumpserver /home/jumpserver/.config
@@ -75,7 +77,8 @@ chmod +x /home/jumpserver/.vnc/xstartup
 chown jumpserver:jumpserver /home/jumpserver/.vnc/xstartup
 
 # Start TigerVNC server with clipboard support
-exec su -p - jumpserver -c "export JMS_TOKEN=${JMS_TOKEN} && \
+exec su - jumpserver -c "export JMS_TOKEN=${JMS_TOKEN} && \
+     export $HOME=/home/jumpserver && \
     /usr/bin/vncserver :0 \
     -geometry ${GEOMETRY} \
     -depth ${DEPTH} \

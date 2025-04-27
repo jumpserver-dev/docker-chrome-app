@@ -27,6 +27,7 @@ echo "${JMS_VNC_PASSWORD}" | vncpasswd -f > /home/jumpserver/.vnc/passwd
 chmod 600 /home/jumpserver/.vnc/passwd
 chown -R jumpserver:jumpserver /home/jumpserver/.vnc
 
+mkdir -p /tmp/jumpserver/download
 mkdir -p /home/jumpserver/.config
 cp -rp /root/.config/* /home/jumpserver/.config/
 chown -R jumpserver:jumpserver /home/jumpserver/.config

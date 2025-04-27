@@ -40,13 +40,11 @@ unset DBUS_SESSION_BUS_ADDRESS
 LANG=C xdg-user-dirs-update --force
 # Start DBus
 dbus-launch --exit-with-session &
-export JMS_TOKEN=${JMS_TOKEN}
 export DISPLAY=:0
 # Start iBus for Chinese input
 export XMODIFIERS="@im=ibus"
 export GTK_IM_MODULE="xim"
 export QT_IM_MODULE="ibus"
-
 
 export LIBGL_ALWAYS_SOFTWARE=1
 export GALLIUM_DRIVER=llvmpipe
@@ -76,7 +74,8 @@ chmod +x /home/jumpserver/.vnc/xstartup
 chown jumpserver:jumpserver /home/jumpserver/.vnc/xstartup
 
 # Start TigerVNC server with clipboard support
-exec su - jumpserver -c "/usr/bin/vncserver :0 \
+exec su -p - jumpserver -c "export JMS_TOKEN=${JMS_TOKEN} && \
+    /usr/bin/vncserver :0 \
     -geometry ${GEOMETRY} \
     -depth ${DEPTH} \
     -dpi ${DPI} \

@@ -220,9 +220,11 @@ def default_chrome_driver_options():
     # 禁用开发者工具
     options.add_argument("--disable-dev-tools")
     # 禁用 密码管理器弹窗
+    # 设置 download.default_directory to /tmp/jumpserver/download/
     prefs = {
         "credentials_enable_service": False,
-        "profile.password_manager_enabled": False
+        "profile.password_manager_enabled": False,
+        "download.default_directory": "/tmp/jumpserver/download/",
     }
     options.add_experimental_option("prefs", prefs)
     options.add_experimental_option("excludeSwitches", ['enable-automation'])
@@ -251,6 +253,7 @@ class AppletApplication(BaseApplication):
             for extension_path in extension_paths:
                 self._chrome_options.add_argument('--load-extension={}'.format(extension_path))
 
+    @wrapper_progress_bar
     def run(self):
         # look path of chromedriver
         service = Service(executable_path='/usr/bin/chromedriver')

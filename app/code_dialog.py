@@ -77,10 +77,16 @@ class TkProgressBar(object):
             self._wait_func()
             self.stop()
             print('wait func done')
+        def keep_top():
+            self._root.lift()                      # 防止偶尔被抢焦点
+            self._root.after(150, keep_top)
 
+        self._root.overrideredirect(True)          # 去掉标题栏
+        self._root.attributes("-type", "dock")     # 最顶层优先级
         self._root.attributes("-topmost", True)
         self._root.attributes("-fullscreen", True)
         threading.Thread(target=_wait_run_func).start()
+        keep_top()
         self._root.mainloop()
 
 

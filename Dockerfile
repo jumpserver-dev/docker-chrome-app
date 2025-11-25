@@ -23,3 +23,4 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked,id=app-apt \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 COPY app /opt/app
+COPY policies.json /etc/chromium/policies/managed/policies.json

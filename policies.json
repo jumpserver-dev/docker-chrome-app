@@ -12,13 +12,13 @@
   "BrowserAddPersonEnabled": false,
   "BrowserGuestModeEnabled": false,
   "DefaultPopupsSetting": 2,
-  "DownloadRestrictions": 3,
-  "VideoCaptureAllowed": true,
-  "AllowFileSelectionDialogs": false,
-  "PromptForDownloadLocation": false,
   "BookmarkBarEnabled": false,
   "PasswordManagerEnabled": false,
   "BrowserLabsEnabled": false,
+  "AllowFileSelectionDialogs": true,
+  "PromptForDownloadLocation": false,
+  "DefaultDownloadDirectory": "/tmp/jumpserver/downloads",
+  "DownloadRestrictions": 0,
   "URLAllowlist": [
     "file:///tmp/jumpserver/"
   ],

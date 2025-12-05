@@ -1,0 +1,29 @@
+{
+  "AutofillAddressEnabled": false,
+  "AutofillCreditCardEnabled": false,
+  "BrowserSignin": 0,
+  "DefaultNotificationsSetting": 2,
+  "DeveloperToolsAvailability": 2,
+  "EditBookmarksEnabled": false,
+  "FullscreenAllowed": true,
+  "IncognitoModeAvailability": 1,
+  "SyncDisabled": true,
+  "AutoplayAllowed": true,
+  "BrowserAddPersonEnabled": false,
+  "BrowserGuestModeEnabled": false,
+  "DefaultPopupsSetting": 2,
+  "BookmarkBarEnabled": false,
+  "PasswordManagerEnabled": false,
+  "BrowserLabsEnabled": false,
+  "AllowFileSelectionDialogs": true,
+  "PromptForDownloadLocation": false,
+  "DefaultDownloadDirectory": "/tmp/jumpserver/downloads",
+  "DownloadRestrictions": 0,
+  "URLAllowlist": [
+    "file:///tmp/jumpserver/"
+  ],
+  "URLBlocklist": [
+    "file://*",
+    "chrome://policy"
+  ]
+}

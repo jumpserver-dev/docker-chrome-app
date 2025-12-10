@@ -11,6 +11,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from code_dialog import CodeDialog, wrapper_progress_bar
 from common import (Asset, User, Account, Platform, Step)
 from common import (BaseApplication)
+import log
 
 
 class Command(Enum):
@@ -20,21 +21,9 @@ class Command(Enum):
     CODE = 'code'
     SELECT_FRAME = 'select_frame'
     SLEEP = 'sleep'
-
-
-def _execute_type(ele: WebElement, value: str):
-    ele.send_keys(value)
-
-
-def _execute_click(ele: WebElement, value: str):
-    ele.click()
-
-
-commands_func_maps = {
-    Command.CLICK: _execute_click,
-    Command.TYPE: _execute_type,
-    Command.OPEN: _execute_type,
-}
+    SELECT_WINDOW = 'select_window'
+    EXECUTE_SCRIPT = 'execute_script'
+    RAW = 'raw'
 
 
 class StepAction:
@@ -55,24 +44,48 @@ class StepAction:
     def execute(self, driver: webdriver.Chrome) -> bool:
         if not self.target:
             return True
-        if self.command == 'select_frame':
+        if self.command == Command.SELECT_FRAME.value:
             self._switch_iframe(driver, self.target)
             return True
-        elif self.command == 'sleep':
+        elif self.command == Command.SLEEP.value:
             self._sleep(driver, self.target)
             return True
+        elif self.command == Command.SELECT_WINDOW.value:
+            self._switch_window(driver, self.target)
+            return True
+        elif self.command == Command.EXECUTE_SCRIPT.value:
+            driver.execute_script(self.target)
+            return True
+        elif self.command == Command.RAW.value:
+            try:
+                exec(self.target)
+            except Exception as e:
+                log.write_log(f"execute raw error: {e}")
+                return False
+            return True
+        # 处理 shadowRoot 下的元素
+        shadow_root_target = self.target.split("|",1)[0] if "|" in self.target else ""
+        if shadow_root_target:
+            shadow_root_target_name, shadow_root_target_value = shadow_root_target.split("=", 1)
+            shadow_root_target_by_name = self.methods_map.get(shadow_root_target_name.upper(), By.NAME)
+            shadow_root_ele = driver.find_element(by=shadow_root_target_by_name, value=shadow_root_target_value)
+            if not shadow_root_ele:
+                return False
+            shadow_root = shadow_root_ele.shadow_root
+            driver = shadow_root
+            self.target = self.target.split("|",1)[1]
         target_name, target_value = self.target.split("=", 1)
         by_name = self.methods_map.get(target_name.upper(), By.NAME)
         ele = driver.find_element(by=by_name, value=target_value)
         if not ele:
             return False
-        if self.command == 'type':
+        if self.command == Command.TYPE.value:
             ele.send_keys(self.value)
-        elif self.command in ['click', 'button']:
+        elif self.command == Command.CLICK.value:
             ele.click()
-        elif self.command in ['open']:
+        elif self.command == Command.OPEN.value:
             driver.get(self.value)
-        elif self.command == 'code':
+        elif self.command == Command.CODE.value:
             unblock_input()
             code_string = CodeDialog(title="Code Dialog", label="Code").wait_string()
             block_input()
@@ -114,11 +127,22 @@ class StepAction:
         time.sleep(sleep_time)
 
 
+    def _switch_window(self, driver: webdriver.Chrome, target: str):
+        target_name, target_value = target.split("=", 1)
+        if target_name == 'index':
+            index = int(target_value)
+            driver.switch_to.window(driver.window_handles[index])
+        elif target_name == 'name':
+            driver.switch_to.window(target_value)
+        else:
+            driver.switch_to.window(target)
+        return True
+
 def execute_action(driver: webdriver.Chrome, step: StepAction) -> bool:
     try:
         return step.execute(driver)
     except Exception as e:
-        print(e)
+        log.write_log(f"execute action error: {e}")
         return False
 
 
@@ -146,7 +170,7 @@ class WebAPP(object):
         if not autofill_type:
             protocol_setting = self.platform.get_protocol_setting("http")
             if not protocol_setting:
-                print("No protocol setting found")
+                log.write_log("No protocol setting found")
                 return
             extra_data = protocol_setting
             autofill_type = extra_data.autofill
@@ -262,7 +286,7 @@ class AppletApplication(BaseApplication):
         if self.app.asset.address != "":
             ok = self.app.execute(self.driver)
             if not ok:
-                print("执行失败")
+                log.write_log("执行失败")
         self.driver.maximize_window()
 
     def wait(self):
@@ -279,7 +303,7 @@ class AppletApplication(BaseApplication):
                 message = ret.get('message', '')
                 if disconnected_msg in message or closed_msg in message:
                     break
-                print("ret: ", ret)
+                log.write_log("ret: ", ret)
         self.close()
 
     def close(self):
@@ -288,8 +312,8 @@ class AppletApplication(BaseApplication):
                 # quit 退出全部打开的窗口
                 self.driver.quit()
             except Exception as e:
-                print(e)
+                log.write_log(f"close error: {e}")
         try:
             self._tmp_user_dir.cleanup()
         except Exception as e:
-            print(e)
+            log.write_log(f"cleanup error: {e}")
